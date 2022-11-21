@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>A JavaScript project</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <header>ROI Selection App</header>
+
+    <nav>
+        Navigation: {{ current_idx }} / {{ total }}
+        <button id="bt:home" onclick="window.location.replace('/');">home</button>
+        <button id="bt:next">next</button>
+        <button id="bt:back">back</button>
+        <button id="bt:finish">finish</button>
+    </nav>
+
+    <div>
+        <b>Current ROI:</b> {{ image_id }}
+        <div class="labeledCheckBoxMarker">
+            <input type="checkbox" id="saved" float=right name="saved" value="saved" disabled {{ "checked" if saved }}>
+            <label for='saved'> ROI Saved</label><br>
+        </div>
+    </div>
+
+    <div id="workspace">
+        <canvas id="drawingPad"></canvas>
+        <canvas id="display"></canvas>
+    </div>
+
+    <nav>
+        <button id="bt:save" color="green">save</button>
+        <button id="bt:clear">clear</button>
+        <button id="bt:fill">fill</button>
+    </nav>
+
+    <script src="/static/main.js"></script>
+
+    <script>renderDisplay({{ data | safe }});</script>
+</body>
+
+</html>

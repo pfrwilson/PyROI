@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>A JavaScript project</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+    <header>ROI Navigation</header>
+    <nav>
+        Navigation: Total ROIs {{ total_rois }}; Saved {{ saved_rois }} / {{
+        total_rois }}
+        <button id="bt:finish" onclick="window.location.replace('/finish')">finish</button>
+    </nav>
+
+
+
+    <h1>ROIs</h1>
+    <ul>
+        {% for roi_info in roi_infos %}
+        <li>
+            <a href="segmentation/{{ roi_info.0 }}">{{ roi_info.0 }}</a>
+            <input type="checkbox" {{ "checked" if roi_info.1 }} disabled>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>
