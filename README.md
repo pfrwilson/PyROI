@@ -1,4 +1,4 @@
-# roi_buddy
+# PyROI
 A simple front end interface to help with drawing Region of Interest (ROI) masks!
 
 <img src="img/img1.png" width="400">
