@@ -29,10 +29,10 @@ Then you can run the segmentation tool:
 
 `main.py`:
 ```python
-from pyroi.app import SegmentationApp
+from pyroi.segmentation_server import SegmentationServer
 
 backend = MyBackend(...)
-app = SegmentationApp(backend).app
+app = SegmentationServer(backend).app
 ```
 
 command line:
