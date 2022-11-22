@@ -21,6 +21,18 @@ class SegmentationBackend(ABC):
         """
 
     @abstractmethod
+    def get_path_to_roi(self, id) -> str:
+        """ """
+
+    @abstractmethod
+    def delete_roi(self, id) -> None:
+        """ """
+
+    @abstractmethod
+    def roi_is_saved(self, id) -> bool:
+        """ """
+
+    @abstractmethod
     def get_info_for_image(self, id) -> dict:
         """
         Returns any additional info necessary for the specified image id.

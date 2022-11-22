@@ -52,5 +52,15 @@ class DummySegmentations(SegmentationBackend):
 
         return True
 
+    def get_path_to_roi(self, id) -> str:
+        return os.path.join(self.work_dir, f"{id}_roi.png")
+
+    def delete_roi(self, id):
+        if os.path.exists(p := self.get_path_to_roi(id)):
+            os.remove(p)
+
+    def roi_is_saved(self, id) -> bool:
+        return os.path.exists(self.get_path_to_roi(id))
+
     def finish(self):
         print("Segmentations Finished!")

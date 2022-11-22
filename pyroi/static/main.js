@@ -6,13 +6,20 @@ var drawCtx = drawingPad.getContext('2d');
 drawCtx.strokeStyle = 'lightblue'
 var display = document.getElementById('display');
 var displayCtx = display.getContext('2d');
-var image
-var image_id
+var image;
+var roi;
+var image_id;
 
 function render_image(image_id) {
     image = new Image();
     image.onload = e => drawCtx.drawImage(image, 0, 0, drawingPad.width, drawingPad.height);
     image.src = '/images/' + image_id;
+}
+
+function render_roi(image_id) {
+    roi = new Image();
+    roi.onload = e => displayCtx.drawImage(roi, 0, 0, drawingPad.width, drawingPad.height);
+    roi.src = '/rois/' + image_id;
 }
 
 document.getElementById('bt:clear').onclick = (e) => { clear() }
@@ -191,8 +198,12 @@ async function post(url, data) {
 }
 
 function renderDisplay(data) {
-    console.log(data)
-    image_id = data.image_id
-    render_image(data.image_id)
+    console.log(data);
+    image_id = data.image_id;
+    render_image(data.image_id);
+    if (data.roi_is_saved) {
+        console.log('loading roi');
+        render_roi(data.image_id);
+    }
     initialize()
 }

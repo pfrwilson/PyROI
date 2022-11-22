@@ -32,9 +32,11 @@
     </div>
 
     <nav>
-        <button id="bt:save" color="green">save</button>
+        <button id="bt:save" style="background-color: rgb(186, 245, 186)">save</button>
         <button id="bt:clear">clear</button>
         <button id="bt:fill">fill</button>
+        <button id="bt:delete" {% if saved %} style="background-color: red" {% else %} disabled {% endif %}
+            onclick="window.location.replace('/delete_roi/{{ image_id }}');">delete</button>
     </nav>
 
     <script src="/static/main.js"></script>

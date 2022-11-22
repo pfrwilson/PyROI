@@ -29,18 +29,21 @@ import pkg_resources
 class SegmentationServer:
     def __init__(self, backend: SegmentationBackend):
 
-        backend.setup()
+        self.backend = backend
+        self.backend.setup()
+        self.all_ids = backend.list_all_ids()
 
-        self.all_rois = backend.list_all_ids()
-        self.rois_are_saved = []
-        for roi in self.all_rois:
-            if backend.get_info_for_image(roi).get("saved"):
-                self.rois_are_saved.append(True)
-            else:
-                self.rois_are_saved.append(False)
+        # self.all_rois = backend.list_all_ids()
 
-        self.current_seg_idx = None
-        self.seg2idx = {roi: idx for idx, roi in enumerate(self.all_rois)}
+        # self.rois_are_saved = []
+        # for roi in self.all_rois:
+        #    if backend.get_info_for_image(roi).get("saved"):
+        #        self.rois_are_saved.append(True)
+        #    else:
+        #        self.rois_are_saved.append(False)
+
+        self.current_seg_idx = 0
+        self.seg2idx = {roi: idx for idx, roi in enumerate(self.backend.list_all_ids())}
         self._welcome_shown = False
 
         app = FastAPI()
@@ -61,9 +64,10 @@ class SegmentationServer:
             if not self._welcome_shown:
                 return RedirectResponse(app.url_path_for("welcome"))
 
-            roi_infos = zip(self.all_rois, self.rois_are_saved)
-            total_rois = len(self.all_rois)
-            saved_rois = sum(self.rois_are_saved)
+            rois_are_saved = [backend.roi_is_saved(id) for id in self.all_ids]
+            roi_infos = zip(self.all_ids, rois_are_saved)
+            total_rois = len(self.all_ids)
+            saved_rois = sum(rois_are_saved)
             return templates.TemplateResponse(
                 "navigation.html",
                 {
@@ -87,20 +91,29 @@ class SegmentationServer:
             path = backend.get_path_to_image(image_id)
             return FileResponse(path)
 
+        @app.get("/rois/{image_id}")
+        async def get_roi(image_id: str):
+            path = backend.get_path_to_roi(image_id)
+            print(path)
+            return FileResponse(path)
+
         @app.get("/segmentation/{image_id}")
         async def segmentation_app(request: Request, image_id):
             self.current_seg_idx = self.seg2idx[image_id]
-            data = {"image_id": image_id}
+            data = {
+                "image_id": image_id,
+                "roi_is_saved": self.backend.roi_is_saved(image_id),
+            }
 
             return templates.TemplateResponse(
                 "roi_app.html",
                 {
                     "request": request,
                     "image_id": image_id,
-                    "saved": self.rois_are_saved[self.current_seg_idx],
+                    "saved": self.backend.roi_is_saved(image_id),
                     "data": json.dumps(data),
                     "current_idx": self.current_seg_idx + 1,
-                    "total": len(self.all_rois),
+                    "total": len(self.all_ids),
                 },
             )
 
@@ -108,11 +121,11 @@ class SegmentationServer:
         async def next():
             next_idx = self.current_seg_idx + 1
 
-            if next_idx >= len(self.all_rois):
+            if next_idx >= len(self.all_ids):
                 self.current_seg_idx = None
                 return RedirectResponse(app.url_path_for("root"))
 
-            next_roi = self.all_rois[self.current_seg_idx + 1]
+            next_roi = self.all_ids[self.current_seg_idx + 1]
 
             return RedirectResponse(
                 app.url_path_for("segmentation_app", image_id=next_roi)
@@ -126,7 +139,7 @@ class SegmentationServer:
                 self.current_seg_idx = None
                 return RedirectResponse(app.url_path_for("root"))
 
-            next_roi = self.all_rois[next_idx]
+            next_roi = self.all_ids[next_idx]
 
             return RedirectResponse(
                 app.url_path_for("segmentation_app", image_id=next_roi)
@@ -143,16 +156,20 @@ class SegmentationServer:
                 image = utils.data_url_to_pil(roi.roi)
                 mask = utils.rgba_image_to_binary_mask(image)
                 # utils.save_binary_mask(mask, "mask.png")
-                import matplotlib.pyplot as plt
 
                 success = backend.submit_roi(roi.id, mask)
-
-                if success:
-                    self.rois_are_saved[self.current_seg_idx] = True
                 return {"success": success}
 
             except:
                 return {"success": False}
+
+        @app.get("/delete_roi/{image_id}")
+        async def delete(request: Request, image_id: str):
+            if backend.roi_is_saved:
+                backend.delete_roi(image_id)
+            return RedirectResponse(
+                app.url_path_for("segmentation_app", image_id=image_id)
+            )
 
         @app.get("/finish")
         async def finish():
