@@ -46,12 +46,10 @@ class SegmentationServer:
         app = FastAPI()
         app.mount(
             "/static",
-            StaticFiles(
-                directory=pkg_resources.resource_filename(__name__, "../static")
-            ),
+            StaticFiles(directory=pkg_resources.resource_filename(__name__, "static")),
         )
         templates = Jinja2Templates(
-            pkg_resources.resource_filename(__name__, "../templates")
+            pkg_resources.resource_filename(__name__, "templates")
         )
 
         @app.get("/favicon.ico")

@@ -1,10 +1,10 @@
 from typing import Protocol
 import numpy as np
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import Optional
 
 
-class SegmentationBackend(Protocol):
+class SegmentationBackend(ABC):
     @abstractmethod
     def submit_roi(self, id, roi: np.ndarray) -> bool:
         """

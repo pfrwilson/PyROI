@@ -1,8 +1,8 @@
 # roi_buddy
 A simple front end interface to help with drawing Region of Interest (ROI) masks!
 
-<img src="img1.png" width="400">
-<img src="img2.png" width="400">
+<img src="img/img1.png" width="400">
+<img src="img/img2.png" width="400">
 
 ## Quickstart
 ```bash
@@ -35,6 +35,7 @@ backend = MyBackend(...)
 app = SegmentationApp(backend).app
 ```
 
+command line:
 ```bash
 uvicorn main:app
 ```

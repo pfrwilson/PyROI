@@ -19,18 +19,40 @@ document.getElementById('bt:clear').onclick = (e) => { clear() }
 document.getElementById('bt:fill').onclick = (e) => { fill() }
 document.getElementById('bt:save').onclick = (e) => { save() }
 
+var inDrawpad = false;
 function getCanvasXY(canvas, ev) {
 
-    let x = ev.clientX - canvas.getBoundingClientRect().left
+    let clientX, clientY;
+    if (ev.clientX === undefined) {
+        clientX = ev.touches[0].clientX;
+    }
+    else {
+        clientX = ev.clientX;
+    }
+    if (ev.clientY === undefined) {
+        clientY = ev.touches[0].clientY;
+    }
+    else {
+        clientY = ev.clientY;
+    }
+
+    inDrawpad = true;
+    let x = clientX - canvas.getBoundingClientRect().left
     x = x / canvas.scrollWidth
     x = Math.max(x, 0)
     x = Math.min(x, 1)
+    if (x == 1 || x == 0) {
+        inDrawpad = false;
+    }
     x = x * canvas.width
 
-    let y = ev.clientY - canvas.getBoundingClientRect().top
+    let y = clientY - canvas.getBoundingClientRect().top
     y = y / canvas.scrollHeight
     y = Math.max(y, 0)
     y = Math.min(y, 1)
+    if (y == 1 || y == 0) {
+        inDrawpad = false;
+    }
     y = y * canvas.height
 
     return {
@@ -39,9 +61,8 @@ function getCanvasXY(canvas, ev) {
     }
 }
 
-var inDrawpad = false;
-drawingPad.onmouseenter = (e) => { inDrawpad = true; };
-drawingPad.onmouseleave = (e) => { inDrawpad = false; };
+//drawingPad.onmouseenter = (e) => { inDrawpad = true; };
+//drawingPad.onmouseleave = (e) => { inDrawpad = false; };
 
 var currX, currY, oldX, oldY;
 var drawing = false;
@@ -61,26 +82,32 @@ function updatePosition(x, y) {
 }
 
 function draw(ev) {
+    //ev.preventDefault();
     let xy = getCanvasXY(drawingPad, ev);
-    updatePosition(xy.x, xy.y)
+    updatePosition(xy.x, xy.y);
     if (drawing) {
         path.lineTo(currX, currY);
         drawCtx.stroke(path);
+        //console.log('drawing');
         //displayCtx.stroke(path);
     }
 }
 
 function startDrawing(ev) {
+    //console.debug('drawing started');
+    ev.preventDefault();
     drawing = true;
     draw(ev);
 }
 
 function stopDrawing(ev) {
+    //console.debug('drawing stopped');
     if (!drawing) return;
+    ev.preventDefault();
     drawing = false;
-    if (!inDrawpad) {
-        path = new Path2D();
-    }
+    //if (!inDrawpad) {
+    //    newPath();
+    //}
 }
 
 function clearCanvas(ctx) {
@@ -91,12 +118,13 @@ function clear() {
     clearCanvas(drawCtx);
     drawCtx.drawImage(image, 0, 0, drawingPad.width, drawingPad.height);
     clearCanvas(displayCtx);
-    console.debug('clear clicked')
+    //console.debug('clear clicked')
     pathCollection = new Path2D();
+    path = new Path2D();
 }
 
 function fill() {
-    console.log('fill clicked');
+    //console.debug('fill clicked');
     clearCanvas(drawCtx);
     drawCtx.drawImage(image, 0, 0, drawingPad.width, drawingPad.height);
     displayCtx.save();
@@ -111,12 +139,15 @@ async function save() {
     const resp = await post('/submit_roi', { 'id': image_id, 'roi': dataURL });
     const json = await resp.json();
     console.log(json)
+    if (json.success) {
+        document.getElementById('saved').checked = true;
+    }
 }
 
 async function initialize() {
-    window.onmousedown = (e) => { console.log('mouse down') };
     //window.onmousemove = (e) => { console.log(getCanvasXY(drawingPad, e)) }
     window.onmousemove = draw;
+    window.ontouchmove = draw;
     drawingPad.onmousedown = startDrawing;
     drawingPad.ontouchstart = startDrawing;
     window.onmouseup = stopDrawing;
