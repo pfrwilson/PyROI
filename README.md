@@ -6,8 +6,8 @@ A simple front end interface to help with drawing Region of Interest (ROI) masks
 
 ## Quickstart
 ```bash
-git clone https://github.com/pfrwilson/roi_boy
-cd roi_boy
+git clone https://github.com/pfrwilson/PyROI
+cd PyROI
 pip install .
 uvicorn example:app
 ```
@@ -19,7 +19,7 @@ This project is designed as a simple tool to perform ROI selection. It is a flex
 Simply clone this project and install it into your python environment. Then you can implement the `SegmentationBackend` interface as you see fit: 
 
 ```python
-from roi_buddy.backends import SegmentationBackend
+from pyroi.backends import SegmentationBackend
 
 class MyBackend(SegmentationBackend):
     ...
@@ -29,7 +29,7 @@ Then you can run the segmentation tool:
 
 `main.py`:
 ```python
-from roi_buddy.app import SegmentationApp
+from pyroi.app import SegmentationApp
 
 backend = MyBackend(...)
 app = SegmentationApp(backend).app
